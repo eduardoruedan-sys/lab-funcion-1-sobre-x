@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Laboratorio f(x)=1/x</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    background:#111;
+    color:#e5e5e5;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+
+.main{
+    display:flex;
+    padding:30px;
+    gap:30px;
+    flex-wrap:wrap;
+}
+
+.panel{
+    width:280px;
+    background:#1a1a1a;
+    padding:20px;
+    border-radius:10px;
+}
+
+.panel h3{
+    margin-top:0;
+    font-weight:400;
+}
+
+.dynamic{
+    margin-top:20px;
+    font-size:14px;
+    color:#38bdf8;
+    min-height:60px;
+}
+
+.canvas-area{
+    flex:1;
+    min-width:400px;
+}
+
+canvas{
+    background:#111;
+}
+
+.reset-btn{
+    margin-top:15px;
+    padding:8px 18px;
+    border-radius:20px;
+    border:1px solid #444;
+    background:transparent;
+    color:#e5e5e5;
+    cursor:pointer;
+}
+
+.reset-btn:hover{
+    background:#e5e5e5;
+    color:#111;
+}
+
+.table-area{
+    padding:20px;
+}
+
+table{
+    border-collapse:collapse;
+}
+
+td, th{
+    border:1px solid #333;
+    padding:8px 12px;
+}
+
+input{
+    width:80px;
+    padding:5px;
+    background:#222;
+    border:1px solid #444;
+    color:white;
+    text-align:center;
+}
+
+.warning{
+    color:#ff4d4d;
+    font-size:14px;
+    margin-top:10px;
+    opacity:0;
+    transition:0.3s;
+}
+
+.signature{
+    position:fixed;
+    bottom:15px;
+    right:20px;
+    font-size:12px;
+    color:#666;
+}
+</style>
+</head>
+
+<body>
+
+<div class="main">
+
+    <div class="panel">
+        <h3>Marco conceptual</h3>
+        <p><strong>Tipo:</strong> Función racional</p>
+        <p><strong>Dominio:</strong> ℝ − {0}</p>
+        <p><strong>Rango:</strong> ℝ − {0}</p>
+        <p><strong>Asíntota vertical:</strong> x = 0</p>
+        <p><strong>Asíntota horizontal:</strong> y = 0</p>
+
+        <div class="dynamic" id="dynamicMessage">
+            Explora escribiendo valores en la tabla.
+        </div>
+    </div>
+
+    <div class="canvas-area">
+        <canvas id="chart" width="600" height="400"></canvas>
+        <button class="reset-btn" onclick="resetZoom()">Reset Zoom</button>
+    </div>
+
+</div>
+
+<div class="table-area">
+    <h3>Tabla editable</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>x</th>
+                <th>y = 1/x</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody"></tbody>
+    </table>
+
+    <div id="domainWarning" class="warning">
+        ⚠ x = 0 no pertenece al dominio.
+    </div>
+</div>
+
+<div class="signature">Creado por Eduardo Rueda</div>
+
+<script>
+
+let chart;
+let studentPoints = [];
+
+window.onload = function(){
+    drawGraph();
+    generateTable();
+};
+
+function drawGraph(){
+
+    const ctx = document.getElementById('chart').getContext('2d');
+
+    let leftBranch = [];
+    let rightBranch = [];
+
+    for(let x=-10; x<0; x+=0.05){
+        leftBranch.push({x:x, y:1/x});
+    }
+
+    for(let x=0.05; x<=10; x+=0.05){
+        rightBranch.push({x:x, y:1/x});
+    }
+
+    chart = new Chart(ctx,{
+        type:'scatter',
+        data:{
+            datasets:[
+            {
+                data:leftBranch,
+                showLine:true,
+                borderColor:"#ffffff",
+                borderWidth:1.5,
+                pointRadius:0
+            },
+            {
+                data:rightBranch,
+                showLine:true,
+                borderColor:"#ffffff",
+                borderWidth:1.5,
+                pointRadius:0
+            },
+            {
+                data:studentPoints,
+                backgroundColor:"#38bdf8",
+                pointRadius:6,
+                showLine:false
+            }
+            ]
+        },
+        options:{
+            animation:{duration:2500},
+            plugins:{
+                legend:{display:false},
+                zoom:{
+                    zoom:{
+                        wheel:{enabled:true},
+                        pinch:{enabled:true},
+                        mode:'xy'
+                    }
+                }
+            },
+            scales:{
+                x:{
+                    type:'linear',
+                    position:'bottom',
+                    grid:{color:"#222"},
+                    border:{color:"#888", width:2}
+                },
+                y:{
+                    grid:{color:"#222"},
+                    border:{color:"#888", width:2}
+                }
+            }
+        }
+    });
+}
+
+function generateTable(){
+    let tbody = document.getElementById("tableBody");
+    for(let i=0;i<6;i++){
+        let row = document.createElement("tr");
+
+        let cellX = document.createElement("td");
+        let inputX = document.createElement("input");
+        inputX.type="number";
+        inputX.step="any";
+        inputX.oninput = updateTable;
+        cellX.appendChild(inputX);
+
+        let cellY = document.createElement("td");
+
+        row.appendChild(cellX);
+        row.appendChild(cellY);
+        tbody.appendChild(row);
+    }
+}
+
+function updateTable(){
+
+    studentPoints = [];
+    let warning = false;
+
+    let rows = document.querySelectorAll("#tableBody tr");
+
+    rows.forEach(row=>{
+        let input = row.cells[0].querySelector("input");
+        let xVal = parseFloat(input.value);
+
+        input.style.border = "1px solid #444";
+
+        if(!isNaN(xVal)){
+            if(xVal === 0){
+                row.cells[1].innerText = "Indefinido";
+                input.style.border = "1px solid #ff4d4d";
+                warning = true;
+                setMessage("No se puede dividir entre 0.");
+            }else{
+                let yVal = 1/xVal;
+                row.cells[1].innerText = yVal.toFixed(4);
+                studentPoints.push({x:xVal, y:yVal});
+
+                if(Math.abs(xVal) < 0.5){
+                    setMessage("Observa cómo la función crece al acercarse a 0.");
+                }
+                else if(Math.abs(xVal) > 5){
+                    setMessage("Cuando x es grande, y se acerca a 0.");
+                }
+                else{
+                    setMessage("Relaciona cada valor de x con su y.");
+                }
+            }
+        }else{
+            row.cells[1].innerText = "";
+        }
+    });
+
+    document.getElementById("domainWarning").style.opacity = warning ? 1 : 0;
+
+    chart.data.datasets[2].data = studentPoints;
+    chart.update();
+}
+
+function setMessage(text){
+    document.getElementById("dynamicMessage").innerText = text;
+}
+
+function resetZoom(){
+    chart.resetZoom();
+}
+
+</script>
+
+</body>
+</html>
