@@ -29,11 +29,6 @@ body{
     border-radius:10px;
 }
 
-.panel h3{
-    margin-top:0;
-    font-weight:400;
-}
-
 .dynamic{
     margin-top:20px;
     font-size:14px;
@@ -44,23 +39,25 @@ body{
 .canvas-area{
     flex:1;
     min-width:400px;
+    text-align:center;
 }
 
 canvas{
     background:#111;
 }
 
-.reset-btn{
-    margin-top:15px;
+.reset-btn, .music-btn{
+    margin-top:10px;
     padding:8px 18px;
     border-radius:20px;
     border:1px solid #444;
     background:transparent;
     color:#e5e5e5;
     cursor:pointer;
+    margin-right:10px;
 }
 
-.reset-btn:hover{
+.reset-btn:hover, .music-btn:hover{
     background:#e5e5e5;
     color:#111;
 }
@@ -95,6 +92,12 @@ input{
     transition:0.3s;
 }
 
+.coord-box{
+    margin-top:10px;
+    font-size:14px;
+    color:#38bdf8;
+}
+
 .signature{
     position:fixed;
     bottom:15px;
@@ -124,7 +127,12 @@ input{
 
     <div class="canvas-area">
         <canvas id="chart" width="600" height="400"></canvas>
+        <br>
         <button class="reset-btn" onclick="resetZoom()">Reset Zoom</button>
+        <button class="music-btn" onclick="toggleMusic()">🎧 Activar Techno</button>
+        <div class="coord-box" id="coordBox">
+            Toca la gráfica para ver coordenadas.
+        </div>
     </div>
 
 </div>
@@ -148,10 +156,16 @@ input{
 
 <div class="signature">Creado por Eduardo Rueda</div>
 
+<!-- Techno instrumental -->
+<audio id="bgmusic" loop>
+  <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_946b55c6b4.mp3?filename=dark-techno-125197.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 
 let chart;
 let studentPoints = [];
+let musicOn = false;
 
 window.onload = function(){
     drawGraph();
@@ -200,7 +214,7 @@ function drawGraph(){
             ]
         },
         options:{
-            animation:{duration:2500},
+            responsive:true,
             plugins:{
                 legend:{display:false},
                 zoom:{
@@ -211,17 +225,18 @@ function drawGraph(){
                     }
                 }
             },
-            scales:{
-                x:{
-                    type:'linear',
-                    position:'bottom',
-                    grid:{color:"#222"},
-                    border:{color:"#888", width:2}
-                },
-                y:{
-                    grid:{color:"#222"},
-                    border:{color:"#888", width:2}
+            onClick:(e)=>{
+                const points = chart.getElementsAtEventForMode(e,'nearest',{intersect:false},true);
+                if(points.length){
+                    const point = points[0];
+                    const data = chart.data.datasets[point.datasetIndex].data[point.index];
+                    document.getElementById("coordBox").innerText =
+                        "x: " + data.x.toFixed(3) + " | y: " + data.y.toFixed(3);
                 }
+            },
+            scales:{
+                x:{type:'linear', position:'bottom', grid:{color:"#222"}},
+                y:{grid:{color:"#222"}}
             }
         }
     });
@@ -270,16 +285,7 @@ function updateTable(){
                 let yVal = 1/xVal;
                 row.cells[1].innerText = yVal.toFixed(4);
                 studentPoints.push({x:xVal, y:yVal});
-
-                if(Math.abs(xVal) < 0.5){
-                    setMessage("Observa cómo la función crece al acercarse a 0.");
-                }
-                else if(Math.abs(xVal) > 5){
-                    setMessage("Cuando x es grande, y se acerca a 0.");
-                }
-                else{
-                    setMessage("Relaciona cada valor de x con su y.");
-                }
+                setMessage("Relaciona cada x con su y correspondiente.");
             }
         }else{
             row.cells[1].innerText = "";
@@ -298,6 +304,18 @@ function setMessage(text){
 
 function resetZoom(){
     chart.resetZoom();
+}
+
+function toggleMusic(){
+    let music = document.getElementById("bgmusic");
+    music.volume = 0.25;
+    if(!musicOn){
+        music.play();
+        musicOn = true;
+    }else{
+        music.pause();
+        musicOn = false;
+    }
 }
 
 </script>
