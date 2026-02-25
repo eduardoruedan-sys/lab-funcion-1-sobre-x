@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Laboratorio f(x)=1/x</title>
+<title>HUD Matemático — 1/x vs 1/|x|</title>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
@@ -10,60 +10,75 @@
 <style>
 body{
     margin:0;
-    background:#111;
-    color:#e5e5e5;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    background:#05070d;
+    color:#d1d5db;
+    font-family:Consolas, monospace;
 }
 
-.main{
-    display:flex;
-    padding:30px;
-    gap:30px;
-    flex-wrap:wrap;
-}
-
-.panel{
-    width:280px;
-    background:#1a1a1a;
-    padding:20px;
-    border-radius:10px;
-}
-
-.dynamic{
-    margin-top:20px;
-    font-size:14px;
+h1{
+    text-align:center;
+    font-weight:400;
+    letter-spacing:2px;
+    margin:15px 0;
     color:#38bdf8;
-    min-height:60px;
+}
+
+.container{
+    display:flex;
+    gap:20px;
+    padding:20px;
+}
+
+.hud{
+    width:260px;
+    padding:20px;
+    background:rgba(20,25,35,0.7);
+    border:1px solid rgba(56,189,248,0.3);
+    box-shadow:0 0 15px rgba(56,189,248,0.15);
+}
+
+.hud h3{
+    margin-top:0;
+    letter-spacing:1px;
+}
+
+.blue{ color:#38bdf8; }
+.purple{ color:#a855f7; }
+
+.hud p{
+    font-size:13px;
+    margin:6px 0;
 }
 
 .canvas-area{
     flex:1;
-    min-width:400px;
     text-align:center;
 }
 
 canvas{
-    background:#111;
+    background:#0a0f1a;
+    border:1px solid rgba(56,189,248,0.2);
 }
 
-.reset-btn, .music-btn{
-    margin-top:10px;
-    padding:8px 18px;
-    border-radius:20px;
-    border:1px solid #444;
+button{
+    margin:10px 5px;
+    padding:8px 16px;
+    border:1px solid rgba(56,189,248,0.4);
     background:transparent;
-    color:#e5e5e5;
+    color:#38bdf8;
     cursor:pointer;
-    margin-right:10px;
 }
 
-.reset-btn:hover, .music-btn:hover{
-    background:#e5e5e5;
-    color:#111;
+button:hover{
+    background:#38bdf8;
+    color:#05070d;
 }
 
-.table-area{
-    padding:20px;
+.tables{
+    display:flex;
+    justify-content:center;
+    gap:80px;
+    margin:30px 0;
 }
 
 table{
@@ -71,146 +86,121 @@ table{
 }
 
 td, th{
-    border:1px solid #333;
-    padding:8px 12px;
+    border:1px solid #1f2937;
+    padding:6px 10px;
+    text-align:center;
 }
 
 input{
-    width:80px;
-    padding:5px;
-    background:#222;
-    border:1px solid #444;
+    width:70px;
+    background:#111827;
+    border:1px solid #334155;
     color:white;
     text-align:center;
 }
 
-.warning{
-    color:#ff4d4d;
-    font-size:14px;
-    margin-top:10px;
-    opacity:0;
-    transition:0.3s;
-}
-
-.coord-box{
-    margin-top:10px;
-    font-size:14px;
-    color:#38bdf8;
-}
-
 .signature{
     position:fixed;
-    bottom:15px;
-    right:20px;
-    font-size:12px;
-    color:#666;
+    bottom:10px;
+    right:15px;
+    font-size:11px;
+    opacity:0.5;
 }
 </style>
 </head>
 
 <body>
 
-<div class="main">
+<h1>COMPARATIVE ANALYSIS</h1>
 
-    <div class="panel">
-        <h3>Marco conceptual</h3>
-        <p><strong>Tipo:</strong> Función racional</p>
-        <p><strong>Dominio:</strong> ℝ − {0}</p>
-        <p><strong>Rango:</strong> ℝ − {0}</p>
-        <p><strong>Asíntota vertical:</strong> x = 0</p>
-        <p><strong>Asíntota horizontal:</strong> y = 0</p>
+<div class="container">
 
-        <div class="dynamic" id="dynamicMessage">
-            Explora escribiendo valores en la tabla.
-        </div>
-    </div>
+<div class="hud">
+    <h3 class="blue">f(x)=1/x</h3>
+    <p>Dominio: ℝ − {0}</p>
+    <p>Rango: ℝ − {0}</p>
+    <p>Tipo: Racional impar</p>
+    <p>Simetría: Origen</p>
+    <p>Cuadrantes: I y III</p>
+    <p>Asíntota V: x = 0</p>
+    <p>Asíntota H: y = 0</p>
+</div>
 
-    <div class="canvas-area">
-        <canvas id="chart" width="600" height="400"></canvas>
-        <br>
-        <button class="reset-btn" onclick="resetZoom()">Reset Zoom</button>
-        <button class="music-btn" onclick="toggleMusic()">🎧 Activar Techno</button>
-        <div class="coord-box" id="coordBox">
-            Toca la gráfica para ver coordenadas.
-        </div>
-    </div>
+<div class="canvas-area">
+    <canvas id="chart" width="700" height="450"></canvas>
+    <br>
+    <button onclick="startExperience()">ACTIVAR TECHNO & TRAZAR</button>
+    <button onclick="resetZoom()">RESET ZOOM</button>
+</div>
+
+<div class="hud">
+    <h3 class="purple">g(x)=1/|x|</h3>
+    <p>Dominio: ℝ − {0}</p>
+    <p>Rango: (0,∞)</p>
+    <p>Tipo: Racional par</p>
+    <p>Simetría: Eje y</p>
+    <p>Cuadrantes: I y II</p>
+    <p>Asíntota V: x = 0</p>
+    <p>Asíntota H: y = 0</p>
+</div>
 
 </div>
 
-<div class="table-area">
-    <h3>Tabla editable</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>x</th>
-                <th>y = 1/x</th>
-            </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-    </table>
+<div class="tables">
 
-    <div id="domainWarning" class="warning">
-        ⚠ x = 0 no pertenece al dominio.
-    </div>
+<div>
+<h3 style="color:#38bdf8;">Tabla 1/x</h3>
+<table id="tabla1"></table>
+</div>
+
+<div>
+<h3 style="color:#a855f7;">Tabla 1/|x|</h3>
+<table id="tabla2"></table>
+</div>
+
 </div>
 
 <div class="signature">Creado por Eduardo Rueda</div>
 
-<!-- Techno instrumental -->
-<audio id="bgmusic" loop>
-  <source src="https://cdn.pixabay.com/download/audio/2022/10/25/audio_946b55c6b4.mp3?filename=dark-techno-125197.mp3" type="audio/mpeg">
+<audio id="techno" loop>
+<source src="techno.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 
 let chart;
-let studentPoints = [];
-let musicOn = false;
+let left1=[], right1=[], left2=[], right2=[];
+let dataLeft1=[], dataRight1=[], dataLeft2=[], dataRight2=[];
+let index=0;
 
-window.onload = function(){
-    drawGraph();
-    generateTable();
+window.onload=function(){
+    prepareData();
+    createChart();
+    crearTabla("tabla1",1);
+    crearTabla("tabla2",2);
 };
 
-function drawGraph(){
-
-    const ctx = document.getElementById('chart').getContext('2d');
-
-    let leftBranch = [];
-    let rightBranch = [];
-
-    for(let x=-10; x<0; x+=0.05){
-        leftBranch.push({x:x, y:1/x});
+function prepareData(){
+    for(let x=-10;x<0;x+=0.05){
+        left1.push({x:x,y:1/x});
+        left2.push({x:x,y:1/Math.abs(x)});
     }
-
-    for(let x=0.05; x<=10; x+=0.05){
-        rightBranch.push({x:x, y:1/x});
+    for(let x=0.05;x<=10;x+=0.05){
+        right1.push({x:x,y:1/x});
+        right2.push({x:x,y:1/Math.abs(x)});
     }
+}
 
-    chart = new Chart(ctx,{
+function createChart(){
+    const ctx=document.getElementById('chart').getContext('2d');
+    chart=new Chart(ctx,{
         type:'scatter',
         data:{
             datasets:[
-            {
-                data:leftBranch,
-                showLine:true,
-                borderColor:"#ffffff",
-                borderWidth:1.5,
-                pointRadius:0
-            },
-            {
-                data:rightBranch,
-                showLine:true,
-                borderColor:"#ffffff",
-                borderWidth:1.5,
-                pointRadius:0
-            },
-            {
-                data:studentPoints,
-                backgroundColor:"#38bdf8",
-                pointRadius:6,
-                showLine:false
-            }
+                {data:dataLeft1, showLine:true, borderColor:"#38bdf8", pointRadius:0},
+                {data:dataRight1, showLine:true, borderColor:"#38bdf8", pointRadius:0},
+                {data:dataLeft2, showLine:true, borderColor:"#a855f7", pointRadius:0},
+                {data:dataRight2, showLine:true, borderColor:"#a855f7", pointRadius:0}
             ]
         },
         options:{
@@ -225,96 +215,73 @@ function drawGraph(){
                     }
                 }
             },
-            onClick:(e)=>{
-                const points = chart.getElementsAtEventForMode(e,'nearest',{intersect:false},true);
-                if(points.length){
-                    const point = points[0];
-                    const data = chart.data.datasets[point.datasetIndex].data[point.index];
-                    document.getElementById("coordBox").innerText =
-                        "x: " + data.x.toFixed(3) + " | y: " + data.y.toFixed(3);
-                }
-            },
             scales:{
-                x:{type:'linear', position:'bottom', grid:{color:"#222"}},
-                y:{grid:{color:"#222"}}
+                x:{min:-4,max:4,grid:{color:"#1f2937"}},
+                y:{min:-6,max:6,grid:{color:"#1f2937"}}
             }
         }
     });
 }
 
-function generateTable(){
-    let tbody = document.getElementById("tableBody");
-    for(let i=0;i<6;i++){
-        let row = document.createElement("tr");
+function startExperience(){
+    let music=document.getElementById("techno");
+    music.volume=0.25;
+    music.play();
 
-        let cellX = document.createElement("td");
-        let inputX = document.createElement("input");
-        inputX.type="number";
-        inputX.step="any";
-        inputX.oninput = updateTable;
-        cellX.appendChild(inputX);
+    index=0;
+    dataLeft1.length=0;
+    dataRight1.length=0;
+    dataLeft2.length=0;
+    dataRight2.length=0;
 
-        let cellY = document.createElement("td");
+    animate();
+}
 
-        row.appendChild(cellX);
-        row.appendChild(cellY);
-        tbody.appendChild(row);
+function animate(){
+    if(index<left1.length){
+        dataLeft1.push(left1[index]);
+        dataLeft2.push(left2[index]);
     }
-}
+    if(index<right1.length){
+        dataRight1.push(right1[index]);
+        dataRight2.push(right2[index]);
+    }
 
-function updateTable(){
-
-    studentPoints = [];
-    let warning = false;
-
-    let rows = document.querySelectorAll("#tableBody tr");
-
-    rows.forEach(row=>{
-        let input = row.cells[0].querySelector("input");
-        let xVal = parseFloat(input.value);
-
-        input.style.border = "1px solid #444";
-
-        if(!isNaN(xVal)){
-            if(xVal === 0){
-                row.cells[1].innerText = "Indefinido";
-                input.style.border = "1px solid #ff4d4d";
-                warning = true;
-                setMessage("No se puede dividir entre 0.");
-            }else{
-                let yVal = 1/xVal;
-                row.cells[1].innerText = yVal.toFixed(4);
-                studentPoints.push({x:xVal, y:yVal});
-                setMessage("Relaciona cada x con su y correspondiente.");
-            }
-        }else{
-            row.cells[1].innerText = "";
-        }
-    });
-
-    document.getElementById("domainWarning").style.opacity = warning ? 1 : 0;
-
-    chart.data.datasets[2].data = studentPoints;
     chart.update();
-}
+    index++;
 
-function setMessage(text){
-    document.getElementById("dynamicMessage").innerText = text;
+    if(index<Math.max(left1.length,right1.length)){
+        requestAnimationFrame(animate);
+    }
 }
 
 function resetZoom(){
     chart.resetZoom();
 }
 
-function toggleMusic(){
-    let music = document.getElementById("bgmusic");
-    music.volume = 0.25;
-    if(!musicOn){
-        music.play();
-        musicOn = true;
-    }else{
-        music.pause();
-        musicOn = false;
+function crearTabla(id,tipo){
+    let tabla=document.getElementById(id);
+    tabla.innerHTML="<tr><th>x</th><th>y</th></tr>";
+    for(let i=0;i<5;i++){
+        let row=tabla.insertRow();
+        let cellX=row.insertCell(0);
+        let cellY=row.insertCell(1);
+
+        let input=document.createElement("input");
+        input.type="number";
+        input.step="any";
+
+        input.oninput=function(){
+            let x=parseFloat(this.value);
+            if(!isNaN(x)&&x!==0){
+                let y=(tipo===1)?1/x:1/Math.abs(x);
+                cellY.innerText=y.toFixed(4);
+            }else{
+                cellY.innerText="—";
+            }
+        };
+
+        cellX.appendChild(input);
     }
 }
 
